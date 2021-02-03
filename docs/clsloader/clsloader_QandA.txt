@@ -1,0 +1,88 @@
+searchKey：静态内部类实现单例的优缺点
+
+Q1：类的加载机制是什么？
+{
+    全盘委托；
+    双亲委派；
+    缓存；
+}
+
+-------------------------------
+
+Q2：这三个加载器（bootstrap、ext、app）是单例的吗？怎么实现的？
+是的，在 Launcher类 中通过静态内部类的方式实现的单例模式；
+为了 保持树形结构，否则 会造成树形结构崩溃，动摇双亲委派的根基；
+
+-------------------------------
+
+Q3：静态内部类实现单例的优缺点？
+{
+    https://blog.csdn.net/mnb65482/article/details/80458571
+    优：
+    {
+        ①延迟加载：外部类加载时并 不会 立即加载内部类；
+        ②线程安全：虚拟机会保证一个类的 <clinit>()方法 在多线程环境中被正确地加锁、同步
+    }
+
+    缺：外部无法传参；
+}
+
+-------------------------------
+
+Q4：双亲委派的优缺点分别是什么？
+{
+    优：
+    {
+        树形结构，保证核心类库(rt.jar)的安全，唯一性；eg：java.lang.Object
+        并且节省内存开销；
+    }
+
+    缺：rt.jar中SPI（Service Provider Interface）的 实现类 因在classpath下 所以无法被加载；
+}
+
+-------------------------------
+
+Q5：Java团队针对此缺点，做了什么补救措施？
+{
+    在 JDK 1.2 引入了线程上下文类加载器；
+    在runtime时，默认将 sys loader 设置成了线程上下文类加载器；
+    在需要的时候按照 get - use - reset 的原则来加载相应的类；
+    contextClassLoader.note
+}
+
+Q6：app loader 和 sys loader有什么区别和联系？
+{
+    默认：sys = context = app；
+    指定：sys = context = app.son  (-Djava.system.class.loader)
+}
+
+Q7：如何定义自己的类加载器，说说思路？
+
+Q8：重写loadClass() 和 findClass()的区别？
+{
+    ①推荐重写 findClass()，因为这个方法只是加长了委派链，没有破坏双亲委派；
+    通过 构造方法 传递 super(null) 可置空 parent 直接委派 bootstrap loader ；
+    ClassLoader myCld = new ClassLoader(null) {..findClass..}
+
+    ②若是重写 loadClass()，可能 对 双亲委派造成破坏；
+    #if(is == null)  return super.loadClass(name)；此方法意为：先自行加载，加载不到再向上委托；
+
+}
+
+Q9：我可以用自己写的classloader 加载 java.lang.String吗？
+{
+    若想使自己的classloader成为String类的定义类加载器，是不可以的，因为不论findClass()还
+    是loadClass()，若是想成为定义类加载器，都会调用defineClass()，而在此之前会做
+    preDefineClass()处理，若是以“java”字符串开头的，会抛异常。
+}
+
+Q10：类在什么条件下会被卸载？
+{
+
+}
+由Java虚拟机自带的类加载器所加载的类，在虚拟机的生命周期中，始终不会被卸载。
+前面介绍过，Java虚拟机自带的类加载器包括根类加载器、扩展类加载器和系统类加载器。
+--------------
+
+Q：调用ClassLoader的loadClass() 方法来装载一个类时，会不会初始化这个类？
+A：不会【加载、连接、初始化  -  顺序还没到】，不是对类的主动使用；
