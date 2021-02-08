@@ -1,0 +1,79 @@
+https://www.huaweicloud.com/articles/c390c97d3c6e06bceadf6a515895be59.html
+https://blog.csdn.net/ciqingloveless/article/details/81873395?utm_medium=distribute.pc_relevant.none-task-blog-baidujs_title-2&spm=1001.2101.3001.4242
+
+
+-Xms5m -Xmx5m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/Users/mac/Documents/jvmdemo/heapdump/
+
+
+-Xms 初始堆大小，默认为【物理内存的 1/64】
+-Xmx 最大堆大小，默认为【物理内存的 1/4】
+-Xmn 新生代大小，默认 【整个堆的3/8 ；调试时我喜欢调成1：1 ；eg：-Xms20m -Xmx20m -Xmn10m】
+-Xss 线程的堆栈大小，JDK5.0+每个线程【堆栈】大小为1M，以前每个线程【堆栈】大小为256K；
+
+-XX:+HeapDumpOnOutOfMemoryError  内存爆了时抓取heap内存快照
+-XX:HeapDumpPath=/Users/mac/Documents/jvmdemo/heapdump/ 将快照文件【*.hprod】下载到指定文件夹
+
+一个猜测：Survivor区不能小于为512K？？？【有待查阅|验证】
+答：是的，已经测试过了【-Xms2m -Xmx2m -Xmn1m】Survivor区仍为512K ！！！
+
+*原来是这么算的：【Survivor永远=2，SurvivorRatio 为 Eden的值】
+eg：【-XX:SurvivorRatio=4】 => 【Survivor : Eden =2:4】 => 一个Survivor区占整个年轻代的【1/6】。
+-XX:SurvivorRatio=8  【默认】
+用于设置Eden和其中一个Survivor的比值，默认比例为8（Eden）：1（一个survivor），这个值也比较重要。
+例如：-XX:SurvivorRatio=4：设置年轻代中Eden区与Survivor区的大小比值。
+设置为4，则两个Survivor区与一个Eden区的比值为2:4，一个Survivor区占整个年轻代的【1/6】。
+【一个测试】
+-XX:SurvivorRatio=2 -Xms20m -Xmx20m -Xmn10m  => eden=5M & survivor=2.5M ?
+【结果：完全正确】
+Heap before GC invocations=1 (full 0):
+ PSYoungGen      total 7680K, used 3037K [0x00000007bf600000, 0x00000007c0000000, 0x00000007c0000000)
+  eden space 5120K, 59% used [0x00000007bf600000,0x00000007bf8f76c8,0x00000007bfb00000)
+  from space 2560K, 0% used [0x00000007bfd80000,0x00000007bfd80000,0x00000007c0000000)
+  to   space 2560K, 0% used [0x00000007bfb00000,0x00000007bfb00000,0x00000007bfd80000)
+ ParOldGen       total 10240K, used 0K [0x00000007bec00000, 0x00000007bf600000, 0x00000007bf600000)
+  object space 10240K, 0% used [0x00000007bec00000,0x00000007bec00000,0x00000007bf600000)
+ Metaspace       used 4745K, capacity 4790K, committed 4992K, reserved 1056768K
+  class space    used 540K, capacity 554K, committed 640K, reserved 1048576K
+
+【详细释义】
+1.设置堆的最大和最小值
+-Xmx20M(最大值) ,-Xms20M(最小值)。
+
+2.设置年轻代的大小
+-Xmn2g：设置年轻代大小为2G。整个JVM内存大小=年轻代大小 + 年老代大小 + 持久代大小。持久代一般固定大小为64m，所以增大年轻代后，将会减小年老代大小。此值对系统性能影响较大，Sun官方推荐配置为整个堆的3/8。
+
+3.设置栈的大小
+-Xss128k： 设置每个线程的堆栈大小。JDK5.0以后每个线程堆栈大小为1M，以前每个线程堆栈大小为256K。更具应用的线程所需内存大小进行调整。在相同物理内存下，减小这个值能生成更多的线程。但是操作系统对一个进程内的线程数还是有限制的，不能无限生成，经验值在3000~5000左右。
+
+4.设置出现内存溢出时,内存快照的保存路径
+-XX:+HeapDumpOnOutOfMemoryError
+
+该配置会把快照保存在用户目录或者tomcat目录下，也可以通过 -XX:HeapDumpPath=/tmp/heapdump.hprof 来显示指定路径
+5. -verbose:gc
+
+-verbose:gc 中参数-verbose:gc 表示输出虚拟机中GC的详细情况.
+
+使用后输出如下:
+[Full GC 168K->97K(1984K)， 0.0253873 secs]
+-verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=D:\\dump.hprof
+
+
+以下为截取某一时刻内存片段：
+Heap before GC invocations=1 (full 0):
+ PSYoungGen      total 9216K, used 6423K [0x00000000ff600000, 0x0000000100000000, 0x0000000100000000)
+  eden space 8192K, 78% used [0x00000000ff600000,0x00000000ffc45fa0,0x00000000ffe00000)
+  from space 1024K, 0% used [0x00000000fff00000,0x00000000fff00000,0x0000000100000000)
+  to   space 1024K, 0% used [0x00000000ffe00000,0x00000000ffe00000,0x00000000fff00000)
+ ParOldGen       total 10240K, used 0K [0x00000000fec00000, 0x00000000ff600000, 0x00000000ff600000)
+  object space 10240K, 0% used [0x00000000fec00000,0x00000000fec00000,0x00000000ff600000)
+ Metaspace       used 3459K, capacity 4496K, committed 4864K, reserved 1056768K
+  class space    used 379K, capacity 388K, committed 512K, reserved 1048576K
+
+年轻代：【整个堆的：3/8】当然了，我可以通过-Xmn去成8M eg：-Xms16m -Xmx16m -Xmn8m
+又分为Eden 和 Survivor【from & to】
+Eden:    8 【7.17M】
+From:    1 【512K】
+To:      1 【512K】
+老年代：【整个堆的：5/8】
+
+可以做一个测试，给jvm内存8M，然后观察：
