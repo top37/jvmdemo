@@ -35,7 +35,7 @@ import org.openjdk.jol.info.ClassLayout;
  * JVM也正是这么实现的。将最低位空间设置为初始值，其他空间以其作为offset进行表示，从而达到32位指针表示32G空间的效果。
  *
  * 我的疑问在于：压缩指针，又没有压缩对象，它不应该增加 | 减少
- * 答：对象中的指针(field)占的空间也不小了，32位的系统中占 4byte = 32bit，最大只能表示 2^32 = 4G
+ * 答：对象中的指针(field|ref)占的空间也不小了，32位的系统中占 4byte = 32bit，最大只能表示 2^32 = 4G
  *
  *
  * java.lang.Object object internals:

@@ -1,0 +1,52 @@
+https://www.jianshu.com/p/3ef02a8e83a7?utm_campaign=maleskine&utm_content=note&utm_medium=seo_notes&utm_source=recommendation
+
+静态分派【重载】：编译时确定
+    void test() {
+        Father father = new Son();          //静态分派
+        print(father);
+    }
+
+    void print(Father father) {
+        System.out.println("this is father");
+    }
+
+    void print(Son son) {
+        System.out.println("this is son");
+    }
+
+==========================================================
+
+动态分派【重写】：运行时确定
+    void test() {
+        Father father = new Son();
+        father.name();      //动态分派
+    }
+
+    class Son extends Father {
+        void name(){
+            System.out.println("son");
+        }
+    }
+
+    class Father {
+        void name(){
+            System.out.println("father");
+        }
+    }
+
+
+【单分派与多分派】
+静态分派是多分派的，动态分派是单分派的。
+多分派是指在静态分派的过程中需要考虑两步：
+1、判断静态类型是Father还是Son
+2、判断方法参数是Father还是Son
+综合上述两个因素（宗量），才能确定调用哪个方法。
+而动态分派由于使用的时候已经确定了参数类型，所以不需要对参数类型进行判断，只需要对变量类型进行判断即可。
+比如在上述例子中，我们已经通过静态分派，确定了调用的是无参的name方法，这时候我们就只需要考虑father的实际类型是Father还是Son即可。因此动态分派是单分派的。
+
+【总结】
+在Java多态的两种常见用法中，方法重载使用的是静态分派机制，而方法重写使用的是静态分派机制。
+这也就导致了，方法重载调用的时候是根据变量的静态类型来决定调用哪个方法。而方法重写的时候，则是根据变量的实际类型来决定调用哪个方法。
+
+
+
