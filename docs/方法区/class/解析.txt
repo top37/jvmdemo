@@ -1,0 +1,44 @@
+【魔】数
+【版】本号
+【常】量池
+【标】志符
+【类】
+【超】类
+【接】口
+【字】段
+【方】法
+
+【解析的方式】
+之前理解的：init_classloader与define_classloader的过程；
+
+Java虚拟机规范 5.4.3.1节给出了类符号引用的解析步骤:
+func (self *SymRef) resolveClassRef() {
+    d := self.cp.class
+    c := d.loader.LoadClass(self.className)
+    if !c.isAccessibleTo(d) {
+        panic("java.lang.IllegalAccessError")
+    }
+    self.class = c
+}
+
+通俗地讲，如果类D通过符号引用N引用类C的话，要解析N， 先用D的类加载器加载C，然后检查D是否有权限访问C，如果没
+有，则抛出IllegalAccessError异常。
+Java虚拟机规范5.4.4节给出了类 的访问控制规则，把这个规则翻译成Class结构体的 isAccessibleTo（）方法，代码如下（在class.go文件中）：
+func (self *Class) isAccessibleTo(other *Class) bool {
+    return self.IsPublic() || self.getPackageName() == other.getPackageName()
+}
+也就是说，如果类D想访问类C，需要满足两个条件之一：C是 public，或者C和D在同一个运行时包内。
+
+
+------------------------
+
+
+【解析】
+将常量池内的符号引用替换为直接引用的过程。
+两个重点：
+【符号引用】。【即一个字符串】，但是这个字符串给出了一些能够唯一性识别一个方法，一个变量，一个类的相关信息。
+【直接引用】。可以理解为一个【内存地址】，或者【一个偏移量】。
+①比如【类方法】，类变量的直接引用是指向【方法区的指针】；
+②而【实例方法】，实例变量的直接引用则是从实例的【头指针】开始算起到这个实例变量位置的【偏移量】
+举个例子来说，现在调用方法hello()，这个方法的地址是1234567，那么hello就是符号引用，1234567就是直接引用。
+在解析阶段，虚拟机会把所有的类名，方法名，字段名这些符号引用替换为具体的内存地址或偏移量，也就是直接引用。

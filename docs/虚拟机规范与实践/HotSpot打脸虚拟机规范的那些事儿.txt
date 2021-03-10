@@ -1,0 +1,29 @@
+【 须知 - HotSpot打脸虚拟机规范的那些事儿 】
+很多人都拿着实践【HotSpot】当圣经，却不知《虚拟机规范》中，本不是那么定义的；
+
+【规范规定的，没有做】
+{
+    《虚拟机规范 - 2.5.3-Heap》
+    The Java Virtual Machine has a heap that is shared among all Java Virtual Machine threads.
+    【HotSpot】堆内存一定是被所有线程共享的吗？
+    {
+        不是，【TLAB】 - Thread Local Allocation Buffer
+        即：
+        线程本地分配缓存。这是一块线程专用的【堆】。TLAB占用的是【eden区】的空间。
+        在TLAB启用的情况下（默认开启），JVM会为每一个线程分配一块TLAB区域。
+        SQ：但是此【TLAB】是无感知的
+    }
+
+    《虚拟机规范 - 2.5.3-Heap》
+    The heap is the run-time data area from which memory for all class instances and arrays is allocated.
+    【HotSpot】所有对象实例和数组都被分配在堆上吗？
+    {
+        不是，逃逸分析 + 标量替换 => 栈上也能分配对象
+    }
+}
+
+
+
+
+【规范没规定，自创】
+最典型的就是字符串常量池了，单例的native memory中的 HashSet<String> , 没规定，但是实践上为了节省内存等原因，便创建了此概念，或者说数据结构；
