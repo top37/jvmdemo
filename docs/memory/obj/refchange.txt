@@ -1,0 +1,23 @@
+有一串疑问：
+1.GC中会伴随对象的移动，那么【&Object】肯定会改变，hashCode是根据地址计算出来的，也会变吗？
+{
+    1.【对象会移动，地址会改变】
+    http://hg.openjdk.java.net/jdk/jdk12/file/06222165c35f/src/hotspot/share/gc/serial/genMarkSweep.cpp#l326
+    2. hash_code会放到【对象头】里面，下一次发现【计算过】就直接对象头的数据了，所以移动了也无所谓。
+    http://hg.openjdk.java.net/jdk/jdk12/file/06222165c35f/src/hotspot/share/runtime/synchronizer.cpp#l698
+    3. hash_code计算有很多方式，可以通过-XX:hashCode=<val>指定策略，jdk12有五种策略，默认是Marsaglia's xor-shift 算法而不是获取对象地址然后强制类型转换为整数
+    http://hg.openjdk.java.net/jdk/jdk12/file/06222165c35f/src/hotspot/share/runtime/synchronizer.cpp#l658
+}
+
+2.final X x = new X()中x的【值 = &new X()】也会变化？
+{
+    会变化
+    demo.memory.obj.OrderOfObjectsAfterGCMain
+
+    Before GC
+    ascending: 0x76ac971f8
+
+    After GC
+    ascending: 0x6c005ecd8
+}
+

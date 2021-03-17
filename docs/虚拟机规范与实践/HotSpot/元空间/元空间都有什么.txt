@@ -1,0 +1,26 @@
+https://wiki.openjdk.java.net/display/HotSpot/Metaspace
+Q：文档上说，只有加载器被回收时，才回收元空间，那岂不是说永远都不回收元空间？
+
+
+It is used to manage memory for class metadata. 【 Class metadata 】 are allocated when classes are loaded.
+Their lifetime is usually scoped to that of the loading classloader - when a loader gets collected, all class metadata it accumulated are released in bulk.
+The memory manager does not need to track individual allocations for the purpose of freeing them.
+Hence, the metaspace allocator is an Arena- or Region-Based Allocator.
+It is optimized for fast, low-overhead allocation of native memory at the cost of not being able to (easily) delete arbitrary blocks.
+
+核心关系 -
+它用于管理类元数据的内存。【类元数据】是在加载类时分配的。
+它们的【生存期】通常限定在加载【类加载器】的生存期内——当一个加载器被收集时，它积累的所有类元数据都会被批量释放。
+内存管理器不需要跟踪单个分配来释放它们。
+因此，元空间分配器是一个基于竞技场或区域的分配器。
+它优化了本机内存的快速、低开销分配，代价是不能（轻松）删除任意块。
+
+【元空间的特点】- 【核心关系 - 类加载器：以类加载器为单位，开辟空间，批量操作；缺点：不能单独回收某一个类对象】
+充分利用了Java语言规范中的好处：类及相关的元数据的生命周期与类加载器的一致。
+每个加载器有专门的存储空间
+只进行线性分配
+不会单独回收某个类
+省掉了GC扫描及压缩的时间
+元空间里的对象的位置是固定的
+如果GC发现某个类加载器不再存活了，会把相关的空间整个回收掉
+

@@ -1,0 +1,16 @@
+官方给出的解释是以下四点：
+① 【兼容JRockit VM】移除永久代是为了融合 HotSpot JVM 与 JRockit VM 而做出的努力，因为 【JRockit 没有永久代】，所以不需要配置永久代。
+② 【OOM】永久代内存经常不够用或发生内存溢出，抛出异常 【java.lang.OutOfMemoryError: PermGen】。
+{
+    若不配置元空间大小，理论上元空间与本机内存一致
+}
+③ 【简化GC】这是因为在 JDK1.7 版本中，指定的 PermGen 区大小为 【8M】，由于 PermGen 中类的元数据信息在每次 FullGC 的时候都可能被收集，回收率都偏低，成绩很难令人满意；
+{
+    每一个回收器有专门的元数据迭代器
+    Q：元空间也参与垃圾回收，成绩令人满意？
+}
+④ 【-XX ?? 不好调优】还有为 PermGen 分配多大的空间很难确定，PermSize 的大小依赖于很多因素，比如，JVM 加载的 class 总数、【常量池】的大小和方法的大小等。
+{
+    jdk1.8将字符串常量池放在了堆中，缓解了元空间的压力
+}
+⑤【EXT】弹性，元空间默认不设置【MetaspaceSize not the MaxMetaspaceSize】是native memory【本机内存】

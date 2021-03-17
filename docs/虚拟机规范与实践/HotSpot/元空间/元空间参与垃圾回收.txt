@@ -1,0 +1,6 @@
+2400.241: [GC concurrent-root-region-scan-start]
+2400.241: [Full GC (Metadata GC Threshold) 2400.252: [GC concurrent-root-region-scan-end, 0.0101404 secs]
+2400.252: [GC concurrent-mark-start]
+ 1151M->603M(4356M), 2.6980537 secs]
+   [Eden: 0.0B(2558.0M)->0.0B(2613.0M) Survivors: 55.0M->0.0B Heap: 1151.7M(4356.0M)->603.6M(4356.0M)], [Metaspace: 259187K->92248K(1034240K)]
+ [Times: user=3.92 sys=0.00, real=2.70 secs]

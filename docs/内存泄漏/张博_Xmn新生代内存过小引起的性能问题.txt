@@ -1,0 +1,26 @@
+首先，给我上了一课，要找问题，第一步，便是：
+【查看启动脚本，参数】 - 看看是否合理；
+
+其内存配置为：
+Linux - 16G
+# jvm 参数 start
+MetaspaceSize=256m
+MaxMetaspaceSize=256m
+Xms=12288m
+Xmx=12288m
+Xmn=512m   ---> 问题出现在此处设置过小
+Xss=512k
+SurvivorRatio=8
+# jvm 参数 end
+
+现象：
+启动前几天效果不错；
+第四天后，老年代内存飙升，并且频繁Full GC，其中每次STW时间30s左右，极其严重影响性能；
+
+解决方案：
+Xmn=4096m
+
+
+
+而后，通过
+【jdk1.8+ 则启用G1】
