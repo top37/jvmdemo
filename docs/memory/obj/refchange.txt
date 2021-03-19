@@ -1,3 +1,11 @@
+【思维】
+在Java运行环境中，对象的【HashCode】是【面子】，而【&new X()】是【里子】；
+
+寻找对象并不是通过HashCode去找，而是通过实时变化的Ref【&new X()】去寻找；
+所以，即使两个对象存在相同的HashCode，JVM也不会找错。
+
+
+
 有一串疑问：
 1.GC中会伴随对象的移动，那么【&Object】肯定会改变，hashCode是根据地址计算出来的，也会变吗？
 {
@@ -20,4 +28,7 @@
     After GC
     ascending: 0x6c005ecd8
 }
+https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.12.4
+final ：A variable can be declared final. A final variable may only be assigned to once.
+final ：指变量只能被赋值一次
 

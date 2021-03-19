@@ -1,0 +1,32 @@
+GC作为守护线程，肯定也是占用内存的，默认是多少？怎么调？ - https://www.coder.work/article/1427584
+
+G1中并发标记时，top到达end怎么办？内存回收之后top会不会回缩？从图上看，即使收集了，也没有回缩的状态？
+采用的是复制算法进行回收
+
+首先一个存疑的结论：在对象图中，没有引用链便不能被链上的对象引用。
+
+三色标记中，两个灰色可以相连吗?
+猜测:可以；
+
+
+对象不知道自己是否被标色，它甚至连自己是不是垃圾都不知道？
+对象不需要知道，JVM知道就可以了。
+但是JVM不知道白src能否变灰，这完全是用户线程运行时不确定的啊
+
+
+
+我怎么觉得PreTAMS和NextTAMS其中，用一个就行吧？
+使用两个TAMS，来记录top的上两个版本?
+
+top指针指代的是这些区域内对象的开头 ，
+bottom则指代的是这些区域內对象的结尾 ，
+nextTAMS表示的是本次标记开始时间的top位置【】 ，
+prevTAMS表示的是上次标记开始时间的top位置。
+
+
+
+
+Thread1_Queue |region1_bitmap|region2_bitmap|region3_bitmap|||
+Thread1_Queue |region4_bitmap|region5_bitmap|region6_bitmap|||
+Thread1_Queue |region2_bitmap|region4_bitmap|region7_bitmap|||
+对象是线程共享的嘛，肯定位图队列【快照队列，当然了，目前为止我也不知道能不能把为位图当成快照...】中的快照肯定也是能复用的。
