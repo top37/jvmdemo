@@ -1,0 +1,30 @@
+作者：RednaxelaFX
+链接：https://www.zhihu.com/question/29268019/answer/43762165
+
+不过如果要听我的版本的话，请继续读下去：其实在高度优化的现代JVM里，safepoint有几种不同的用法。
+GC safepoint是最常见、大家听说得最多的，但还有deoptimization safepoint也很重要。
+在HotSpot VM里，这两种safepoint目前实现在一起，但其实概念上它们俩没有直接联系，需要的数据不一样。
+无论是哪种safepoint，最简洁的定义是“A point in program where the state of execution is known by the VM”。
+这里“state of execution”特意说得模糊，是因为不同种类的safepoint需要的数据不一样。
+GC safepoint需要知道在那个程序位置上，调用栈、寄存器等一些重要的数据区域里什么地方包含了GC管理的指针；
+Deoptimization safepoint需要知道在那个程序位置上，原本抽象概念上的JVM的执行状态（所有局部变量、临时变量、锁，等等）到底分配到了什么地方，是在栈帧￼的具体某个slot还是在某个寄存器里，之类的。
+如果要触发一次GC，那么JVM里的所有Java线程都必须到达GC safepoint；
+如果要执行一次deoptimization，那么需要执行deoptimization的线程要在到达deoptimization safepoint之后才可以开始deoptimize。
+不同JVM实现会选用不同的位置放置safepoint。以HotSpot VM为例，在解释器里每条字节码的边界都可以是一个safepoint，因为HotSpot的解释器总是能很容易的找出完整的“state of execution”。
+【而在JIT编译的代码里】
+①HotSpot会在所有方法的临返回之前，
+②以及所有非counted loop的循环的回跳之前放置safepoint。
+HotSpot的JIT编译器不但会生成机器码，还会额外在每个safepoint生成一些“调试符号信息”，以便VM能找到所需的“state of execution”。
+为GC生成的符号信息是OopMap，指出栈上和寄存器里哪里有GC管理的指针；为deoptimization生成的符号信息是debugInfo，指出如果要把当前栈帧从compiled frame转换为interpreted frame的话，要从哪里把相应的局部变量、临时变量、锁等信息找出来。
+之所以只在选定的位置放置safepoint是因为：
+挂在safepoint的调试符号信息要占用空间。如果允许每条机器码都可以是safepoint的话，需要存储的数据量会很大（当然这有办法解决，例如用delta存储和用压缩）safepoint会影响优化。
+特别是deoptimization safepoint，会迫使JVM保留一些只有解释器可能需要的、JIT编译器认定无用的变量的值。
+本来JIT编译器可能可以发现某些值不需要而消除它们对应的运算，如果在safepoint需要这些值的话那就只好保留了。
+这才是更重要的地方，所以要尽量少放置safepoint像HotSpot VM这样，在safepoint会生成polling代码询问VM是否要“进入safepoint”，polling也有开销所以要尽量减少。
+还有一种情况是当某个线程在执行native函数的时候。此时该线程在执行JVM管理之外的代码，不能对JVM的执行状态做任何修改，因而JVM要进入safepoint不需要关心它。
+
+所以也可以把【正在执行native函数：eg - notify、wait...】的线程看作“已经进入了safepoint”，或者把这种情况叫做【“在safe-region里”】。JVM外部要对JVM执行状态做修改必须要通过JNI。
+
+所有能修改JVM执行状态的JNI函数在入口处都有safepoint检查，一旦JVM已经发出通知说此时应该已经到达safepoint就会在这些检查的地方停下来把控制权交给JVM。
+【换一个JVM说】
+JRockit选择放置safepoint的地方在【方法的入口】以及【循环末尾】回跳之前，跟HotSpot略为不同。

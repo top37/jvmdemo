@@ -1,0 +1,9 @@
+两个对象的hashCode相同，则equals也一定为true么?
+首先，答案肯定是不一定。同时反过来equals为true，hashCode也不一定相同。
+类的hashCode方法和equals方法都可以重写，返回的值完全在于自己定义。
+hashCode()返回该对象的哈希码值；equals()返回两个对象是否相等。
+关于hashCode和equal是方法是有一些 常规协定 ：
+1、两个对象用equals()比较返回true，那么两个对象的hashCode()方法必须返回相同的结果。
+2、两个对象用equals()比较返回false，不要求hashCode()方法也一定返回不同的值，但是最好返回不同值，以提搞哈希表性能。
+3、重写equals()方法，必须重写hashCode()方法，以保证equals方法相等时两个对象hashcode返回相同的值。
+

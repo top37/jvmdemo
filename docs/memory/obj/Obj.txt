@@ -1,7 +1,10 @@
 https://blog.csdn.net/liujianyangbj/article/details/108049482  【对象结构 & 32G的由来】
 https://blog.csdn.net/liujianyangbj/article/details/108074167 【32位CPU最多支持4G内存是怎么算出来的】
+首先，指针是用来寻址的，指针的大小就是寻址能力的大小
+之所以同样4Byte，寻的地址有4G的和32G的区别，是因为BASE不同
+
 常识：
-① 1byte = 255；
+① 1byte = 2^8 = 255；
 ② 计算机操作系统会给内存每1个字节分配1个内存地址, cpu只需要知道某个数据类型的地址, 就可以直接去到读影的内存位置去提取数据了
 
 思维：【寻址能力是不变的，可变的是单位】

@@ -1,5 +1,7 @@
 GC作为守护线程，肯定也是占用内存的，默认是多少？怎么调？ - https://www.coder.work/article/1427584
 
+启动Java程序，分配了一些内存，然后关闭程序，内存还没GC，怎么清理？
+
 G1中并发标记时，top到达end怎么办？内存回收之后top会不会回缩？从图上看，即使收集了，也没有回缩的状态？
 采用的是复制算法进行回收
 
@@ -30,3 +32,11 @@ Thread1_Queue |region1_bitmap|region2_bitmap|region3_bitmap|||
 Thread1_Queue |region4_bitmap|region5_bitmap|region6_bitmap|||
 Thread1_Queue |region2_bitmap|region4_bitmap|region7_bitmap|||
 对象是线程共享的嘛，肯定位图队列【快照队列，当然了，目前为止我也不知道能不能把为位图当成快照...】中的快照肯定也是能复用的。
+Spring
+{
+    Q：Spring的Bean什么时候销毁？Bean会被回收吗？存活的时候怎么保证不被GC回收的？
+    A：context.close()的时候销毁。销毁之后可以被回收。
+    private final Map<String, Object> singletonObjects =newHashMap();
+    不被GC回收，肯定是能寻到根的，这个根就是常量-单例集合singletonObjects，它持有所有Spring容器中所有活着的Bean，故而不会被回收
+
+}

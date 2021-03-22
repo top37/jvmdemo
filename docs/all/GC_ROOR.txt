@@ -1,0 +1,18 @@
+gc root 一共包含以下几类：
+
+System class：被bootstrap或者system类加载器加载的类，比如rt.jar里的java.util.*；
+JNI global：native代码里的global变量；
+JNI local：native代码里的local变量，比如用户定义的JNI代码和JVM的内部代码；
+Thread：已经启动并且没有stop的线程；
+Thread block：当前活跃的线程block中引用的对象；
+busy monitor：被调用了wait()或者notify()或者被synchronized同步的对象，如果是synchronized方法，那么静态方法指的类，非静态方法指的是对象；
+java local：local变量，比如方法的入参和方法内创建的变量；
+native stack：native代码里的出入参数，比如file/net/IO方法以及反射的参数；
+finalizable：在一个队列里等待它的finalizer 运行的对象；
+unfinalized：一个有finalize方法的对象，还没有被finalize，同时也没有进入finalizer队列等待finalize；
+unreachable：不会被触碰到的对象，在MAT里被标记为root用来retain object，否则是不会在分析中出现的；
+java stack frame：java栈帧包含了本地变量，当dump被解析时且在preferences里设置过把栈帧当做对象，这时才会产生；
+
+————————————————
+版权声明：本文为CSDN博主「阿布（all is well）」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/syc_wwyxhqc/article/details/104730723
