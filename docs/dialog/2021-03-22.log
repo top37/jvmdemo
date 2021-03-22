@@ -1,0 +1,4 @@
+1.jpa 返回对象而不是object[]
+2.log sql含参
+3.jvm safepoint & oom不退出jvm
+4.进程 【正常|异常】退出，操作系统都会回收其内存
