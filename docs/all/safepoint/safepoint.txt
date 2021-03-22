@@ -1,3 +1,11 @@
+openjdk/hotspot/src/share/vm/runtime/safepoint.cpp
+
+所以也可以把【正在执行native函数：eg - notify、wait...】的线程看作“已经进入了safepoint”，或者把这种情况叫做【“在safe-region里”】。JVM外部要对JVM执行状态做修改必须要通过JNI。
+
+【SafePoint的位置】
+①HotSpot会在所有方法的临返回之前，
+②以及所有非counted loop的循环的回跳之前放置safepoint。
+
 作者：RednaxelaFX
 链接：https://www.zhihu.com/question/29268019/answer/43762165
 
