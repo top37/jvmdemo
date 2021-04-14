@@ -1,0 +1,41 @@
+【notice】
+用户态：
+发布一些事件，让epoll监控，然后返回给我：就是我要的，直接用；
+发布一些事件，让select监控，然后返回给我：有我想要的，但是我还得自己再筛选一遍；
+内核态：
+epoll监控是异步的 【async -> listen】，而select是同步的 【copy while】
+
+* epoll原理并不是Reactor模式实现的，而是 【红黑树+事件链表+异步[触发回调]】 的方式实现的，详情见 epoll.jpg
+①IO发生时，只要涉及到 【内核态 -> 用户态】 的 copy 操作，都是需要阻塞的
+②当然了，也可以依赖非阻塞IO，在【用户态】实现多路复用【一个线程处理多个Socket】的逻辑； 【 相当于while(1){ rpc() } 】
+非阻塞IO的缺点就是循环了，不论执行多长的代码，迟早还要回来；
+
+一个epitem管理了多个【fd|socket】
+
+epoll_create：【创建⼀个 epoll 对象】 创建两个数据结构：红黑树rb_root + 事件链表rdllist
+epoll_ctl：【向 epoll 对象中添加要管理的连接】 向数据结构中添加fds，添加关注的事件
+epoll_wait：【等待其管理的连接上的 IO 事件】等待果子：收到异步通知后，通知用户线程去获取事件链表上的元素
+
+int main(){
+ listen(lfd, ...);
+ cfd1 = accept(...);
+ cfd2 = accept(...);
+ efd = epoll_create(...);
+ epoll_ctl(efd, EPOLL_CTL_ADD, cfd1, ...);
+ epoll_ctl(efd, EPOLL_CTL_ADD, cfd2, ...);
+ epoll_wait(efd, ...)
+}
+
+select 、 poll 时间复杂度O(n)  因为：需要轮询 -> 同步；
+epoll 时间复杂度O(1);事件驱动【eg:取快递】 -> 原理：异步I/O【回调函数，异步通知：callback,肯定是另有线程维护异步】
+
+红黑树节点：|fd1 & callback1|fd2 & callback2|...
+
+link：
+https://blog.csdn.net/yunzhaji3762/article/details/79154525
+Selector是如何做到同时管理多个socket的？
+通过unsafe方法申请了一块内存【pollArray】，所有注册在Selector中的元素【 ServerSocketChannel | SocketChannel 】，都将保存在此数组【pollArray】中，将其 fd 和 event 写在这个pollArray里；
+| fd_int&event_short | fd_int&event_short | fd_int&event_short | fd_int&event_short |...
+
+Selector中的select是如何实现一次获取多个有事件发生的channel的？
+依赖于操作系统提供的epoll函数
