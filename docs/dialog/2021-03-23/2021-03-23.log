@@ -24,6 +24,7 @@
 
 4.静态多分派【重载】、动态单分派【重写】
 {
+    静态|动态：编译|运行
     https://www.jianshu.com/p/46b2b2ed25d1?utm_campaign=haruki&utm_content=note&utm_medium=reader_share&utm_source=weixin
     宗量：方法调用者、方法参数
     看多分派还是单分派，要考虑全场景，也就是说 [既要有重写又要有重载] 的场景下，去分析能调用到某一方法需要几个宗量
